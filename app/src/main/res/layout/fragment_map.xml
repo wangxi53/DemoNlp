@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >   
+
+    <fragment 
+		android:id="@+id/map_drive_mode"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:name="com.google.android.gms.maps.MapFragment"/>
+
+    <Button
+        android:id="@+id/button_map_view"
+        android:layout_width="200dp"
+        android:layout_height="60dp"
+        android:text="Nearby"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:background="@color/blue_ukha"
+        android:layout_margin="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"/>
+    
+    <RelativeLayout
+		    android:id="@+id/mapMagnifiedLayout" 
+		    android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_margin="40dp"
+            android:visibility="gone">
+		    <fragment
+			    android:id="@+id/mapViewMagnified"
+			    android:layout_width="match_parent"
+			    android:layout_height="match_parent"
+			    android:name="com.google.android.gms.maps.SupportMapFragment"
+			    android:enabled="true" />
+		    
+		    <TextView
+		        android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+		        android:gravity="center"
+		        android:text="@string/map_fragment_text"
+		        android:textSize="16sp"
+		        android:textColor="@color/white"
+		        android:background="@color/transparent"/>
+
+		    <ImageView
+		        android:id="@+id/btn_accept"
+		        android:layout_width="30dp"
+		        android:layout_height="30dp"
+		        android:layout_margin="10dp"
+		        android:layout_alignParentRight="true"
+		        android:layout_alignParentBottom="true"
+		        android:src="@drawable/ic_waypoint_accept" />
+
+		    <ImageView
+		        android:id="@+id/btn_dismiss"
+		        android:layout_width="30dp"
+		        android:layout_height="30dp"
+		        android:layout_margin="10dp"
+		        android:layout_alignParentLeft="true"
+		        android:layout_alignParentBottom="true"
+		        android:src="@drawable/ic_waypoint_dismiss" />
+
+		    <ImageView
+		        android:id="@+id/iv_cross_hair"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_centerHorizontal="true"
+		        android:layout_centerVertical="true"
+		        android:src="@drawable/ic_waypoint_cross_hair" />
+
+		    <ImageView
+		        android:id="@+id/btn_delete"
+		        android:layout_width="30dp"
+		        android:layout_height="30dp"
+		        android:layout_margin="10dp"
+		        android:layout_alignParentBottom="true"
+		        android:layout_alignParentLeft="true"
+		        android:visibility="gone" 
+		        android:src="@drawable/ic_waypoint_delete" />
+            
+        </RelativeLayout>
+    
+    <ImageView
+    	android:id="@+id/btn_drive_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/uk_report_tab"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true" />         
+        
+    <ImageView
+		    android:id="@+id/iv_center_location"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignParentBottom="true"
+		    android:layout_alignParentLeft="true"
+		    android:layout_marginLeft="10dp"
+		    android:layout_marginBottom="10dp"
+		    android:src="@drawable/ic_center_location" />
+</RelativeLayout>

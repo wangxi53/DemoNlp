@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NLP</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+	<string name="start">Start</string>
+	
+	<string name="map_fragment_text">Do you want to report defect on this location?</string>
+	<string name="report_summary_problem">Problem: </string>
+    <string name="processing_message">Uploading the image...</string>
+    <string name="processing_message_report">Uploading the report...</string>
+    <string name="camera_text_problem">Issue: </string>
+    <string name="disclaimer_accept">Accept</string>
+    <string name="map_activity_back">back</string>
+    <string name="disclaimer_activity_warning">WARNING:</string>
+    <string name="disclaimer_activity_text">This application must not be used when you are in control of a vehicle.</string>
+</resources>
