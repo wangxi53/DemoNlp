@@ -13,6 +13,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.greenowlmobile.nlp.demonlp.utilities.Constants;
+import com.greenowlmobile.nlp.demonlp.utilities.LocationManager;
 import com.greenowlmobile.nlp.demonlp.utilities.Utilities;
 
 public class FragmentPagerActivity extends FragmentActivity {
@@ -102,6 +103,9 @@ public class FragmentPagerActivity extends FragmentActivity {
                                 Constants.noInternetFlag = true;
                                 Constants.callToServerFlag = true;
                                 Constants.mps3PlayedMarker.clear();
+
+		                        LocationManager.getInstance(FragmentPagerActivity.this, 5).removeListener(
+				                Constants.locationListener);
 
                                 finish();
 

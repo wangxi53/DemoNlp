@@ -2,7 +2,6 @@ package com.greenowlmobile.nlp.demonlp;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -19,11 +18,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -42,14 +39,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 public class MapFragement extends Fragment {
 
 	private Location location_update;
 	private Location location_previous;
-	private LocationManager.LocationListener locationListener;
+
 	private LatLng current;
 	private GoogleMap map;
 	private GoogleMap mapViewMagnified;
@@ -95,7 +90,7 @@ public class MapFragement extends Fragment {
 
 				location_update = Constants.LastKnowLocation;
 
-				locationListener = new LocationManager.LocationListener() {
+				Constants.locationListener = new LocationManager.LocationListener() {
 
 					@Override
 					public void locationChanged(final Location location) {
@@ -144,8 +139,8 @@ public class MapFragement extends Fragment {
 								map.animateCamera(cameraUpdate);
 
 							} else {
-								// if (Constants.MY_LOCATION_MARKER != null)
-								// Constants.MY_LOCATION_MARKER.remove();
+								if (Constants.MY_LOCATION_MARKER != null)
+								    Constants.MY_LOCATION_MARKER.remove();
 							}
 
                             if(InternetUtilities.hasInternetConnectivity(getActivity())){
@@ -164,97 +159,11 @@ public class MapFragement extends Fragment {
                                             url = Constants.baseUrl + "ne=" + neLat + "," + neLng
                                                     + "&" + "sw=" + swLat + "," + swLng;
 
-                                            try {
-                                                String result = InternetUtilities.getIncidents(url, Constants.tries_post_to_server);
-//                                                String result = "[{\"sourceText\":\"Toronto: In YORK on WESTON ROAD SOUTHBOUND between STEELES AVENUE and FINCH AVENUE due to Road construction during the day time as reported by GTN\",\"eventCode\":815,\"mp3s\":[\"weston road\",\"southbound\",\"between\",\"STEELES AVENUE\",\"and\",\"finch avenue\",\"possible slow traffic (default)\",\"due to incident (default)\"],\"lat\":43.77027,\"lon\":-79.546585},{\"sourceText\":\"Toronto: In YORK on STEELES AVENUE WESTBOUND between HIGHWAY 400 / NORFINCH DR and KIPLING AVENUE due to Road construction during the day time as reported by GTN\",\"eventCode\":815,\"mp3s\":[\"steeles avenue\",\"westbound\",\"between\",\"HIGHWAY 400 / NORFINCH DR\",\"and\",\"kipling avenue\",\"possible slow traffic (default)\",\"due to incident (default)\"],\"lat\":43.772076,\"lon\":-79.53805},{\"sourceText\":\"Toronto: In TORONTO on FINCH AVENUE WESTBOUND between HIGHWAY 400 and ISLINGTON AVENUE due to Road construction during the day time as reported by GTN\",\"eventCode\":815,\"mp3s\":[\"finch avenue\",\"westbound\",\"between\",\"HIGHWAY 400\",\"and\",\"islington avenue\",\"possible slow traffic (default)\",\"due to incident (default)\"],\"lat\":43.753815,\"lon\":-79.53392}]";
-
-                                                Log.e("Test", result);
-
-                                                if(result != null && !result.trim().equalsIgnoreCase("")){
-                                                    JSONArray incidentsJsonArray = new JSONArray(result);
-                                                    JSONObject incidentJsonObject;
-                                                    ArrayList<String> mp3s;
-                                                    Incident incident;
-                                                    StringBuilder mp3;
-                                                    String mp3String;
-                                                    String handledMp3String;
-
-                                                    if (incidentsJsonArray.length() != 0) {
-                                                        for (int i = 0; i < incidentsJsonArray.length(); i++){
-                                                            mp3s = new ArrayList<>();
-                                                            incident = new Incident();
-                                                            mp3 = new StringBuilder();
-
-                                                            incidentJsonObject = incidentsJsonArray.getJSONObject(i);
-                                                            incident.setSourceText(incidentJsonObject.getString("sourceText"));
-                                                            incident.setEventCode(incidentJsonObject.getInt("eventCode"));
-                                                            incident.setLatitude(incidentJsonObject.getDouble("lat"));
-                                                            incident.setLongitude(incidentJsonObject.getDouble("lon"));
-
-                                                            JSONArray mp3sJsonArray = incidentJsonObject.getJSONArray("mp3s");
-
-                                                            for (int j = 0; j < mp3sJsonArray.length(); j++){
-                                                                mp3String = mp3sJsonArray.getString(j);
-                                                                mp3s.add(mp3String);
-
-                                                                if(mp3String.contains("(default)")){
-                                                                    handledMp3String = mp3String.replaceAll("default", "")
-                                                                            .replace("(","").replaceAll("\\)", "");
-                                                                    mp3.append(handledMp3String);
-                                                                } else {
-                                                                    mp3.append(mp3String);
-                                                                }
-
-                                                                mp3.append(' ');
-                                                            }
-                                                            incident.setMp3s(mp3s);
-                                                            incident.setMp3(mp3.toString());
-
-                                                            Log.e("Test mp3 string", "mp3: " + mp3.toString());
-
-                                                            incidents.add(incident);
-
-                                                            final Incident finalIncident = incident;
-                                                            getActivity().runOnUiThread(new Runnable() {
-                                                                @Override
-                                                                public void run() {
-                                                                    //draw markers on map
-                                                                    Marker marker = map.addMarker(new MarkerOptions()
-                                                                            .position(new LatLng(finalIncident.getLatitude(), finalIncident.getLongitude()))
-                                                                            .title("Incident")
-                                                                            .snippet(finalIncident.getMp3())
-                                                                            .anchor(0.5f, 1));
-
-//                                                                    markers.add(marker);
-                                                                    mp3Markers.add(marker);
-
-                                                                }
-                                                            });
-
-                                                        }
-
-                                                    }
-                                                    else {
-                                                        getActivity().runOnUiThread(new Runnable() {
-                                                            @Override
-                                                            public void run() {
-                                                                Toast.makeText(getActivity(), "There is no incident around you.", Toast.LENGTH_LONG).show();
-                                                            }
-                                                        });
-
-                                                    }
-                                                }
-
-//                                                MapUtilities.drawIncidentMarkers(getActivity(),  map, incidents);
-
-                                            } catch (Exception e){
-                                                e.printStackTrace();
-                                                Log.e("Test", "Caught exception");
-
-                                            }
+                                            updateIncidents(url);
 
                                         }
                                     });
+
                                     callToServerThread.start();
 
                                 }
@@ -266,14 +175,10 @@ public class MapFragement extends Fragment {
                                 }
                             }
 
-                            Log.e("Test", "markers size is: " + mp3Markers.size());
-
                             //check whether current location is near from any markers
                             pointsToCheck ++;
                             if(pointsToCheck >= Constants.pointsToCheck){
                                 pointsToCheck = 0;
-
-                                Log.e("Test", "I am in");
 
                                 LatLng neLatLng = new LatLng(location.getLatitude() + neLat, location.getLongitude() + neLng);
                                 LatLng swLatLng = new LatLng(location.getLatitude() + swLat, location.getLongitude() + swLng);
@@ -300,8 +205,6 @@ public class MapFragement extends Fragment {
                                         markerLocation.setLongitude(marker.getPosition().longitude);
 
                                         newLocation = new Location("New Location");
-//                                        newLocation.setLatitude(43.77027);
-//                                        newLocation.setLongitude(-79.546585);
 
                                         newLocation.setLatitude(location.getLatitude());
                                         newLocation.setLongitude(location.getLongitude());
@@ -513,107 +416,7 @@ public class MapFragement extends Fragment {
                         url = Constants.baseUrl + "ne=" + neLat + "," + neLng
                                 + "&" + "sw=" + swLat + "," + swLng;
 
-                        try {
-                            String result = InternetUtilities.getIncidents(url, Constants.tries_post_to_server);
-//                            String result = "[{\"sourceText\":\"Toronto: In YORK on WESTON ROAD SOUTHBOUND between STEELES AVENUE and FINCH AVENUE due to Road construction during the day time as reported by GTN\",\"eventCode\":815,\"mp3s\":[\"weston road\",\"southbound\",\"between\",\"STEELES AVENUE\",\"and\",\"finch avenue\",\"possible slow traffic (default)\",\"due to incident (default)\"],\"lat\":43.77027,\"lon\":-79.546585},{\"sourceText\":\"Toronto: In YORK on STEELES AVENUE WESTBOUND between HIGHWAY 400 / NORFINCH DR and KIPLING AVENUE due to Road construction during the day time as reported by GTN\",\"eventCode\":815,\"mp3s\":[\"steeles avenue\",\"westbound\",\"between\",\"HIGHWAY 400 / NORFINCH DR\",\"and\",\"kipling avenue\",\"possible slow traffic (default)\",\"due to incident (default)\"],\"lat\":43.772076,\"lon\":-79.53805}]";
-                            Log.e("Test", result);
-
-//                            Thread.sleep(5000);
-
-                            if(result != null && !result.trim().equalsIgnoreCase("")){
-                                JSONArray incidentsJsonArray = new JSONArray(result);
-                                JSONObject incidentJsonObject;
-                                ArrayList<String> mp3s;
-                                Incident incident;
-                                StringBuilder mp3;
-                                String mp3String;
-                                String handledMp3String;
-
-                                if(incidentsJsonArray.length() == 0){
-
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getActivity(), "There is no incident around you.", Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-
-                                }
-
-                                for (int i = 0; i < incidentsJsonArray.length(); i++){
-                                    mp3s = new ArrayList<>();
-                                    incident = new Incident();
-                                    mp3 = new StringBuilder();
-
-                                    incidentJsonObject = incidentsJsonArray.getJSONObject(i);
-                                    incident.setSourceText(incidentJsonObject.getString("sourceText"));
-                                    incident.setEventCode(incidentJsonObject.getInt("eventCode"));
-                                    incident.setLatitude(incidentJsonObject.getDouble("lat"));
-                                    incident.setLongitude(incidentJsonObject.getDouble("lon"));
-
-                                    JSONArray mp3sJsonArray = incidentJsonObject.getJSONArray("mp3s");
-
-                                    for (int j = 0; j < mp3sJsonArray.length(); j++){
-                                        mp3String = mp3sJsonArray.getString(j);
-                                        mp3s.add(mp3String);
-
-                                        if(mp3String.contains("default")){
-                                            handledMp3String = mp3String.replaceAll("default", "")
-                                                    .replace("(","").replaceAll("\\)", "");
-                                            mp3.append(handledMp3String);
-                                        } else {
-                                            mp3.append(mp3String);
-                                        }
-
-                                        mp3.append(' ');
-                                    }
-                                    incident.setMp3s(mp3s);
-                                    incident.setMp3(mp3.toString());
-
-                                    incidents.add(incident);
-
-                                    final Incident finalIncident = incident;
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            //draw markers on map
-                                            Marker marker = map.addMarker(new MarkerOptions()
-                                                    .position(new LatLng(finalIncident.getLatitude(), finalIncident.getLongitude()))
-                                                    .title("Incident")
-                                                    .snippet(finalIncident.getMp3())
-                                                    .anchor(0.5f, 1));
-
-//                                            markers.add(marker);
-
-                                            mp3Markers.add(marker);
-                                        }
-                                    });
-
-                                }
-
-                            }
-
-                            else {
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getActivity(), "There is no incident around you.", Toast.LENGTH_LONG).show();
-                                    }
-                                });
-
-                            }
-
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    nearbyButton.setClickable(true);
-                                }
-                            });
-
-                        } catch (Exception e){
-                            e.printStackTrace();
-
-                        }
+                        updateIncidents(url);
 
                     }
                 });
@@ -651,7 +454,7 @@ public class MapFragement extends Fragment {
 		// unregister the location listener
 		Constants.LastKnowLocation = location_update;
 		LocationManager.getInstance(getActivity(), 5).removeListener(
-				locationListener);
+				Constants.locationListener);
 	}
 
 	@Override
@@ -660,7 +463,7 @@ public class MapFragement extends Fragment {
 
 		// Utilities.checkIfLocationServiceIsOn(getActivity());
 		LocationManager.getInstance(getActivity(), 5).addListener(
-				locationListener);
+				Constants.locationListener);
 
         //initialize tts
         tts = new TextToSpeech(getActivity().getApplicationContext(),
@@ -672,65 +475,6 @@ public class MapFragement extends Fragment {
                         }
                     }
                 });
-
-	}
-
-	private void setUpMapMagnifiedIfNeeded(final LatLng latLng,
-			final Marker waypointMarker) {
-		// Do a null check to confirm that we have not already instantiated the
-		// map.
-		getActivity().findViewById(R.id.mapMagnifiedLayout).setVisibility(
-				View.VISIBLE);
-		ImageView crosshairImage = (ImageView) getActivity().findViewById(
-				R.id.iv_cross_hair);
-
-		crosshairImage.setPadding(0, 0, 0, 0);
-		crosshairImage.setImageResource(R.drawable.ic_waypoint_cross_hair);
-
-		mapViewMagnified = ((SupportMapFragment) getActivity()
-				.getSupportFragmentManager().findFragmentById(
-						R.id.mapViewMagnified)).getMap();
-		mapViewMagnified.getUiSettings().setZoomControlsEnabled(false);
-		mapViewMagnified.getUiSettings().setCompassEnabled(false);
-		mapViewMagnified.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,
-				mapViewMagnified.getMaxZoomLevel() - 5));
-
-		final ImageView acceptButton = (ImageView) getActivity().findViewById(
-				R.id.btn_accept);
-		final ImageView dismissButton = (ImageView) getActivity().findViewById(
-				R.id.btn_dismiss);
-		final ImageView deleteButton = (ImageView) getActivity().findViewById(
-				R.id.btn_delete);
-
-		acceptButton.setColorFilter(getResources().getColor(R.color.icon_bg));
-		dismissButton.setColorFilter(getResources().getColor(R.color.icon_bg));
-		deleteButton.setColorFilter(getResources().getColor(R.color.icon_bg));
-
-		if (waypointMarker != null) {
-			deleteButton.setVisibility(View.VISIBLE);
-		} else {
-			deleteButton.setVisibility(View.GONE);
-		}
-
-		acceptButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				LatLng LatLng_to_report = mapViewMagnified.getCameraPosition().target;
-				Constants.Latlng_report_from_map_view = LatLng_to_report;
-				getActivity().findViewById(R.id.mapMagnifiedLayout)
-						.setVisibility(View.GONE);
-				((ViewPager) getActivity().findViewById(R.id.pager))
-						.setCurrentItem(1);
-			}
-		});
-
-		dismissButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				getActivity().findViewById(R.id.mapMagnifiedLayout)
-						.setVisibility(View.GONE);
-			}
-		});
 
 	}
 
@@ -757,4 +501,127 @@ public class MapFragement extends Fragment {
 
         return false;
     }
+
+    private void updateIncidents(String url){
+        try {
+            String result = InternetUtilities.getIncidents(url, Constants.tries_post_to_server);
+//                            String result = "[{\"sourceText\":\"Toronto: In YORK on WESTON ROAD SOUTHBOUND between STEELES AVENUE and FINCH AVENUE due to Road construction during the day time as reported by GTN\",\"eventCode\":815,\"mp3s\":[\"weston road\",\"southbound\",\"between\",\"STEELES AVENUE\",\"and\",\"finch avenue\",\"possible slow traffic (default)\",\"due to incident (default)\"],\"lat\":43.77027,\"lon\":-79.546585},{\"sourceText\":\"Toronto: In YORK on STEELES AVENUE WESTBOUND between HIGHWAY 400 / NORFINCH DR and KIPLING AVENUE due to Road construction during the day time as reported by GTN\",\"eventCode\":815,\"mp3s\":[\"steeles avenue\",\"westbound\",\"between\",\"HIGHWAY 400 / NORFINCH DR\",\"and\",\"kipling avenue\",\"possible slow traffic (default)\",\"due to incident (default)\"],\"lat\":43.772076,\"lon\":-79.53805}]";
+            Log.e("Test", result);
+
+            if(result != null && !result.trim().equalsIgnoreCase("")
+                    && !result.trim().equalsIgnoreCase(Constants.errorResponse)
+                    && !result.trim().equalsIgnoreCase(Constants.exceptionResponse)){
+                JSONArray incidentsJsonArray = new JSONArray(result);
+                JSONObject incidentJsonObject;
+                ArrayList<String> mp3s;
+                Incident incident;
+                StringBuilder mp3;
+                String mp3String;
+                String handledMp3String;
+
+                if(incidentsJsonArray.length() == 0){
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity(), "There is no incident around you.", Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                }
+
+                for (int i = 0; i < incidentsJsonArray.length(); i++){
+                    mp3s = new ArrayList<>();
+                    incident = new Incident();
+                    mp3 = new StringBuilder();
+
+                    incidentJsonObject = incidentsJsonArray.getJSONObject(i);
+                    incident.setSourceText(incidentJsonObject.getString("sourceText"));
+                    incident.setEventCode(incidentJsonObject.getInt("eventCode"));
+                    incident.setLatitude(incidentJsonObject.getDouble("lat"));
+                    incident.setLongitude(incidentJsonObject.getDouble("lon"));
+
+                    JSONArray mp3sJsonArray = incidentJsonObject.getJSONArray("mp3s");
+
+                    for (int j = 0; j < mp3sJsonArray.length(); j++){
+                        mp3String = mp3sJsonArray.getString(j);
+                        mp3s.add(mp3String);
+
+                        if(mp3String.contains("default")){
+                            handledMp3String = mp3String.replaceAll("default", "")
+                                    .replace("(","").replaceAll("\\)", "");
+                            mp3.append(handledMp3String);
+                        } else {
+                            mp3.append(mp3String);
+                        }
+
+                        mp3.append(' ');
+                    }
+                    incident.setMp3s(mp3s);
+                    incident.setMp3(mp3.toString());
+
+                    incidents.add(incident);
+
+                    final Incident finalIncident = incident;
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //draw markers on map
+                            Marker marker = map.addMarker(new MarkerOptions()
+                                    .position(new LatLng(finalIncident.getLatitude(), finalIncident.getLongitude()))
+                                    .title("Incident")
+                                    .snippet(finalIncident.getMp3())
+                                    .anchor(0.5f, 1));
+
+//                                            markers.add(marker);
+
+                            mp3Markers.add(marker);
+                        }
+                    });
+
+                }
+
+            } else if (result.trim().equalsIgnoreCase("")) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "There is no incident around you.",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            } else if (result.trim().equalsIgnoreCase(Constants.errorResponse)) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "Server Error",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            } else if (result.trim().equalsIgnoreCase(Constants.exceptionResponse)){
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "Caught Exception",
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            }
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    nearbyButton.setClickable(true);
+                }
+            });
+
+        } catch (Exception e){
+            e.printStackTrace();
+
+        }
+
+    }
+
 }

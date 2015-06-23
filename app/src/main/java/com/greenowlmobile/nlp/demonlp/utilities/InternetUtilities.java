@@ -58,8 +58,10 @@ public class InternetUtilities {
 
         InputStream inputStream = null;
         String result = null;
-        try {
-            for (int i = 0; i < tries ; i++) {
+
+        for (int i = 0; i < tries ; i++) {
+            try {
+
                 HttpParams httpParams = new BasicHttpParams();
 
                 if (i + 1 >= tries) {
@@ -83,23 +85,30 @@ public class InternetUtilities {
                     // receive response as inputStream
                     inputStream = response.getEntity().getContent();
 
-                    // convert inputstream to string
+                    // convert input stream to string
                     if (inputStream != null) {
                         result = convertInputStreamToString(inputStream);
 
                         response.getEntity().consumeContent();
 
-                        return result;
+                        if(!result.trim().equalsIgnoreCase("[]")){
+                            return result;
+
+                        } else {
+                            return "";
+
+                        }
+
                     }
                 } else {
-                    result = "";
+                    result = Constants.errorResponse;
                 }
 
+            } catch (Exception e) {
+                e.printStackTrace();
+                result = Constants.exceptionResponse;
             }
 
-        } catch (Exception e) {
-            Log.e("Test", e.toString());
-            result = "";
         }
 
         return result;

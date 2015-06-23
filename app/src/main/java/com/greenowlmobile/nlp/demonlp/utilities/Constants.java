@@ -16,8 +16,8 @@ public class Constants {
 	public final static int Splash_Timer_Interval = 5 * 1000;//declare the total time to count down for the timer
 	public final static int Splash_Countdown_Intervel = 1000;
 
-    public static final int tries_post_to_server = 3;
-    public static final int CONNECTION_TIME_OUT = 60000;
+    public static final int tries_post_to_server = 10;
+    public static final int CONNECTION_TIME_OUT = 3000;
     public static final String baseUrl = "http://54.224.65.246:8080/incidents_nlp_poc/getIncidentsJSON?";
 
     //for Map
@@ -29,10 +29,10 @@ public class Constants {
     public static Location LastKnowLocation;
     public final static double Latitude_default = 43.3065991;
     public final static double Longitude_default = -79.9163396;
-    public final static double neLatAdj = 0.5;
-    public final static double neLngAdj = 0.5;
-    public final static double swLatAdj = -0.5;
-    public final static double swLngAdj = -0.5;
+    public final static double neLatAdj = 0.2;
+    public final static double neLngAdj = 0.2;
+    public final static double swLatAdj = -0.2;
+    public final static double swLngAdj = -0.2;
 
     public final static double neLat = 0.05;
     public final static double neLng = 0.05;
@@ -53,5 +53,10 @@ public class Constants {
      * This code is returned in Activity.onActivityResult
      */
     public final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
+    public static LocationManager.LocationListener locationListener;
+
+    public static final String errorResponse = "Error";
+    public static final String exceptionResponse = "Exception";
 
 }

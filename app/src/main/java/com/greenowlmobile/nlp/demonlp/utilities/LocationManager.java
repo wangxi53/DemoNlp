@@ -196,7 +196,7 @@ GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
              * If no resolution is available, display a dialog to the
              * user with the error.
              */
-//            activity.showDialog(connectionResult.getErrorCode());
+            activity.showDialog(connectionResult.getErrorCode());
         }
     }
 
